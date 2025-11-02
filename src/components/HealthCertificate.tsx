@@ -11,6 +11,7 @@ import {
   DialogTitle 
 } from "./ui/dialog";
 import { Download, Share2, FileText } from "lucide-react";
+import { useLanguage } from "./LanguageProvider";
 
 interface HealthCertificateProps {
   id: string;
@@ -30,6 +31,20 @@ export function HealthCertificate({
   thumbnail = "https://images.unsplash.com/photo-1533545587081-bbdccaab0c33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpY2FsJTIwY2VydGlmaWNhdGUlMjBkb2N1bWVudHxlbnwxfHx8fDE3NTY5MTgyMDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
 }: HealthCertificateProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
+  
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "valid":
+        return t.valid;
+      case "expired":
+        return t.expired;
+      case "pending":
+        return t.pending;
+      default:
+        return status;
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,7 +94,7 @@ export function HealthCertificate({
                   variant="outline" 
                   className={getStatusColor(status)}
                 >
-                  {status}
+                  {getStatusLabel(status)}
                 </Badge>
               </div>
               
@@ -102,7 +117,7 @@ export function HealthCertificate({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>
-              View and manage your health certificate
+              {t.manageCertificatesAndIds}
             </DialogDescription>
           </DialogHeader>
           
@@ -124,7 +139,7 @@ export function HealthCertificate({
                   variant="outline" 
                   className={getStatusColor(status)}
                 >
-                  {status}
+                  {getStatusLabel(status)}
                 </Badge>
               </div>
 

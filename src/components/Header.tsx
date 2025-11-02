@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, User, Home, FileText, Settings, LogOut, Bell, UserCircle, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { toast } from "sonner@2.0.3";
+import { useLanguage } from "./LanguageProvider";
 
 interface HeaderProps {
   onNavigate: (page: string) => void;
@@ -20,12 +21,28 @@ interface HeaderProps {
 
 export function Header({ onNavigate, currentPage }: HeaderProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
+  const [profileImage, setProfileImage] = useState<string | null>(
+    localStorage.getItem("profileImage") || null
+  );
+
+  useEffect(() => {
+    const handleProfileImageUpdate = (event: CustomEvent) => {
+      setProfileImage(event.detail.imageUrl);
+    };
+
+    window.addEventListener("profileImageUpdated", handleProfileImageUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener("profileImageUpdated", handleProfileImageUpdate as EventListener);
+    };
+  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    return "Good Evening";
+    if (hour < 12) return t.goodMorning;
+    if (hour < 18) return t.goodAfternoon;
+    return t.goodEvening;
   };
 
   const handleMenuClick = (page: string, label: string) => {
@@ -34,11 +51,11 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
   };
 
   const menuItems = [
-    { icon: Home, label: "Home", page: "home" },
-    { icon: FileText, label: "My Certificates", page: "certificates" },
-    { icon: Bell, label: "Notifications", page: "notifications" },
-    { icon: Settings, label: "Settings", page: "settings" },
-    { icon: LogOut, label: "Log Out", page: "logout" },
+    { icon: Home, label: t.home, page: "home" },
+    { icon: FileText, label: t.myCertificates, page: "certificates" },
+    { icon: Bell, label: t.notifications, page: "notifications" },
+    { icon: Settings, label: t.settings, page: "settings" },
+    { icon: LogOut, label: t.logout, page: "logout" },
   ];
 
   return (
@@ -52,8 +69,8 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
         </SheetTrigger>
         <SheetContent side="left" className="w-72">
           <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
-            <SheetDescription>Navigate through your health management app</SheetDescription>
+            <SheetTitle>{t.menu}</SheetTitle>
+            <SheetDescription>{t.menuDescription}</SheetDescription>
           </SheetHeader>
           <nav className="flex flex-col gap-2 mt-6">
             {menuItems.map((item) => (
@@ -81,8 +98,8 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
         <DropdownMenuTrigger asChild>
           <div className="cursor-pointer">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
-              <AvatarFallback>
+              <AvatarImage src={profileImage || undefined} alt="User" />
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
                 <User className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
@@ -91,33 +108,33 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
         <DropdownMenuContent className="w-56" align="end">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="font-medium">Health User</p>
+              <p className="font-medium">{t.healthUser}</p>
               <p className="text-xs text-muted-foreground">
-                user@healthid.com
+                {t.userEmail}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onNavigate("home")}>
             <Home className="mr-2 h-4 w-4" />
-            <span>Home</span>
+            <span>{t.home}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onNavigate("certificates")}>
             <FileText className="mr-2 h-4 w-4" />
-            <span>My Certificates</span>
+            <span>{t.myCertificates}</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onNavigate("notifications")}>
             <Bell className="mr-2 h-4 w-4" />
-            <span>Notifications</span>
+            <span>{t.notifications}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onNavigate("settings")}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>{t.settings}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => toast.info("Help center coming soon")}>
+          <DropdownMenuItem onClick={() => toast.info(t.helpCenterComingSoon)}>
             <HelpCircle className="mr-2 h-4 w-4" />
-            <span>Help & Support</span>
+            <span>{t.helpSupport}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
@@ -125,7 +142,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
             className="text-red-600 focus:text-red-600"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log Out</span>
+            <span>{t.logout}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

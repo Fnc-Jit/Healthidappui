@@ -7,11 +7,13 @@ import { MyCertificatesPage } from "./components/pages/MyCertificatesPage";
 import { NotificationsPage } from "./components/pages/NotificationsPage";
 import { SettingsPage } from "./components/pages/SettingsPage";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { LanguageProvider, useLanguage } from "./components/LanguageProvider";
 import { toast } from "sonner@2.0.3";
 
-export default function App() {
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
+  const { t } = useLanguage();
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -19,7 +21,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    toast.success("Logged out successfully");
+    toast.success(t.loggedOut);
     setIsAuthenticated(false);
     setCurrentPage("home");
   };
@@ -48,7 +50,7 @@ export default function App() {
   };
 
   return (
-    <ThemeProvider>
+    <>
       {/* Show login page if not authenticated */}
       {!isAuthenticated ? (
         <>
@@ -67,6 +69,16 @@ export default function App() {
           </main>
         </div>
       )}
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

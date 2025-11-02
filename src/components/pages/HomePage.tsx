@@ -1,37 +1,40 @@
 import { FileText, Bell, Shield, Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { useLanguage } from "../LanguageProvider";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
+  const { t } = useLanguage();
+  
   const quickActions = [
     {
       icon: FileText,
-      title: "My Certificates",
-      description: "View all health certificates",
+      title: t.myCertificates,
+      description: t.viewAllCertificates,
       action: "certificates",
       color: "text-blue-600"
     },
     {
       icon: Bell,
-      title: "Notifications",
-      description: "Check recent updates",
+      title: t.notifications,
+      description: t.checkRecentUpdates,
       action: "notifications",
       color: "text-purple-600"
     },
     {
       icon: Shield,
-      title: "Health Records",
-      description: "Access medical history",
+      title: t.healthRecords,
+      description: t.accessMedicalHistory,
       action: "certificates",
       color: "text-green-600"
     },
     {
       icon: Activity,
-      title: "Health Tracking",
-      description: "Monitor vital signs",
+      title: t.healthTracking,
+      description: t.monitorVitalSigns,
       action: "certificates",
       color: "text-red-600"
     }
@@ -40,8 +43,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl mb-2">Welcome to Your Health Portal</h2>
-        <p className="text-muted-foreground">Manage your health documents and records in one place</p>
+        <h2 className="text-2xl mb-2">{t.welcomeToPortal}</h2>
+        <p className="text-muted-foreground">{t.manageHealthDocuments}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,29 +71,29 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Your latest health updates</CardDescription>
+          <CardTitle>{t.recentActivity}</CardTitle>
+          <CardDescription>{t.latestHealthUpdates}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="font-medium">COVID-19 Vaccination Certificate</p>
-                <p className="text-sm text-muted-foreground">Added 2 weeks ago</p>
+                <p className="font-medium">{t.covid19Certificate}</p>
+                <p className="text-sm text-muted-foreground">{t.addedWeeksAgo}</p>
               </div>
             </div>
-            <span className="text-sm text-green-600 font-medium">Valid</span>
+            <span className="text-sm text-green-600 font-medium">{t.valid}</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="font-medium">Annual Health Checkup Report</p>
-                <p className="text-sm text-muted-foreground">Added 1 month ago</p>
+                <p className="font-medium">{t.annualCheckup}</p>
+                <p className="text-sm text-muted-foreground">{t.addedMonthAgo}</p>
               </div>
             </div>
-            <span className="text-sm text-green-600 font-medium">Valid</span>
+            <span className="text-sm text-green-600 font-medium">{t.valid}</span>
           </div>
         </CardContent>
       </Card>
