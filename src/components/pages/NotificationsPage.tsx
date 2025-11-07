@@ -59,7 +59,7 @@ export function NotificationsPage() {
 
   const handleDismiss = (id: number) => {
     setNotifications(notifications.filter(n => n.id !== id));
-    toast.success(t.notificationDismissed);
+    toast.success(t.notificationDismissed || "Notification dismissed");
   };
 
   const getIconColor = (type: string) => {

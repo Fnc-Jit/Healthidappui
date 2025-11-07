@@ -1,4 +1,4 @@
-import { User, Bell, Shield, Globe, Moon, Lock, Camera, Upload } from "lucide-react";
+import { User, Bell, Shield, Globe, Moon, Lock, Camera, Upload, Wifi, Database } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
@@ -27,6 +27,17 @@ export function SettingsPage() {
     localStorage.getItem("profileImage") || null
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Profile form state
+  const [fullName, setFullName] = useState<string>(
+    localStorage.getItem("userName") || ""
+  );
+  const [email, setEmail] = useState<string>(
+    localStorage.getItem("userEmail") || ""
+  );
+  const [phone, setPhone] = useState<string>(
+    localStorage.getItem("userPhone") || ""
+  );
 
   const handleDarkModeToggle = () => {
     toggleTheme();
@@ -46,7 +57,7 @@ export function SettingsPage() {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(t.imageTooLarge);
+        toast.error(t.imageTooLarge || "Image size must be less than 5MB");
         return;
       }
       
@@ -55,7 +66,7 @@ export function SettingsPage() {
         const imageDataUrl = reader.result as string;
         setProfileImage(imageDataUrl);
         localStorage.setItem("profileImage", imageDataUrl);
-        toast.success(t.profilePictureUpdated);
+        toast.success(t.profilePictureUpdated || "Profile picture updated successfully");
         
         // Dispatch custom event to update header avatar
         window.dispatchEvent(new CustomEvent("profileImageUpdated", { 
@@ -69,7 +80,7 @@ export function SettingsPage() {
   const handleRemoveImage = () => {
     setProfileImage(null);
     localStorage.removeItem("profileImage");
-    toast.success(t.profilePictureRemoved);
+    toast.success(t.profilePictureRemoved || "Profile picture removed successfully");
     
     // Dispatch custom event to update header avatar
     window.dispatchEvent(new CustomEvent("profileImageUpdated", { 
@@ -77,8 +88,28 @@ export function SettingsPage() {
     }));
   };
 
+  const handleSaveProfile = () => {
+    // Save profile information to localStorage
+    if (fullName.trim()) {
+      localStorage.setItem("userName", fullName.trim());
+    }
+    if (email.trim()) {
+      localStorage.setItem("userEmail", email.trim());
+    }
+    if (phone.trim()) {
+      localStorage.setItem("userPhone", phone.trim());
+    }
+
+    // Dispatch custom event to update header name
+    window.dispatchEvent(new CustomEvent("profileNameUpdated", { 
+      detail: { userName: fullName.trim() } 
+    }));
+
+    toast.success(t.profileUpdated);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
       <div>
         <h2 className="text-2xl mb-2">{t.settings}</h2>
         <p className="text-muted-foreground">{t.manageAccount}</p>
@@ -96,7 +127,7 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           {/* Profile Picture Section */}
           <div className="space-y-2">
-            <Label>{t.profilePicture}</Label>
+            <Label>{t.profilePicture || "Profile Picture"}</Label>
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-20 w-20">
@@ -129,7 +160,7 @@ export function SettingsPage() {
                   className="w-full sm:w-auto"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  {t.uploadPhoto}
+                  {t.uploadPhoto || "Upload Photo"}
                 </Button>
                 {profileImage && (
                   <Button
@@ -138,11 +169,11 @@ export function SettingsPage() {
                     onClick={handleRemoveImage}
                     className="w-full sm:w-auto"
                   >
-                    {t.removePhoto}
+                    {t.removePhoto || "Remove Photo"}
                   </Button>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {t.profilePictureHint}
+                  {t.profilePictureHint || "JPG, PNG or GIF (max. 5MB)"}
                 </p>
               </div>
             </div>
@@ -150,17 +181,34 @@ export function SettingsPage() {
           <Separator />
           <div className="space-y-2">
             <Label htmlFor="name">{t.fullName}</Label>
-            <Input id="name" placeholder="John Doe" />
+            <Input 
+              id="name" 
+              placeholder="John Doe" 
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">{t.email}</Label>
-            <Input id="email" type="email" placeholder="john.doe@example.com" />
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="john.doe@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">{t.phoneNumber}</Label>
-            <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" />
+            <Input 
+              id="phone" 
+              type="tel" 
+              placeholder="+1 (555) 000-0000"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
           </div>
-          <Button onClick={() => toast.success(t.profileUpdated)}>
+          <Button onClick={handleSaveProfile}>
             {t.saveChanges}
           </Button>
         </CardContent>
@@ -178,24 +226,32 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t.emailNotifications}</Label>
-              <p className="text-sm text-muted-foreground">{t.receiveEmailUpdates}</p>
+              <Label>{t.emergencyAlerts}</Label>
+              <p className="text-sm text-muted-foreground">{t.emergencyAlertsDesc}</p>
             </div>
             <Switch defaultChecked />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t.pushNotifications}</Label>
-              <p className="text-sm text-muted-foreground">{t.receivePushNotifications}</p>
+              <Label>{t.reportStatusUpdates}</Label>
+              <p className="text-sm text-muted-foreground">{t.reportStatusUpdatesDesc}</p>
             </div>
             <Switch defaultChecked />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t.certificateExpiryAlerts}</Label>
-              <p className="text-sm text-muted-foreground">{t.notifyBeforeExpiry}</p>
+              <Label>{t.verificationNotifications}</Label>
+              <p className="text-sm text-muted-foreground">{t.verificationNotificationsDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.smsFallback}</Label>
+              <p className="text-sm text-muted-foreground">{t.smsFallbackDesc}</p>
             </div>
             <Switch defaultChecked />
           </div>
@@ -214,29 +270,89 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t.twoFactorAuth}</Label>
-              <p className="text-sm text-muted-foreground">{t.extraLayerSecurity}</p>
+              <Label>{t.locationPrivacy}</Label>
+              <p className="text-sm text-muted-foreground">{t.locationPrivacyDesc}</p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => toast.info(t.twoFactorComingSoon)}
-            >
-              {t.enable}
-            </Button>
+            <Switch defaultChecked />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>{t.changePassword}</Label>
-              <p className="text-sm text-muted-foreground">{t.updatePasswordRegularly}</p>
+              <Label>{t.anonymousReporting}</Label>
+              <p className="text-sm text-muted-foreground">{t.anonymousReportingDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.dataSharing}</Label>
+              <p className="text-sm text-muted-foreground">{t.dataSharingDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.clearReportHistory}</Label>
+              <p className="text-sm text-muted-foreground">{t.clearReportHistoryDesc}</p>
             </div>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => toast.info(t.passwordChangeComingSoon)}
+              onClick={() => toast.info(t.clearReportHistory)}
             >
-              {t.change}
+              {t.clear}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data & Offline */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            {t.dataOffline}
+          </CardTitle>
+          <CardDescription>{t.dataOfflineDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.autoSyncReports}</Label>
+              <p className="text-sm text-muted-foreground">{t.autoSyncReportsDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.offlineModeToggle}</Label>
+              <p className="text-sm text-muted-foreground">{t.offlineModeToggleDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.photoCompression}</Label>
+              <p className="text-sm text-muted-foreground">{t.photoCompressionDesc}</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>{t.clearLocalData}</Label>
+              <p className="text-sm text-muted-foreground">{t.clearLocalDataDesc}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => toast.info(t.clearLocalData)}
+            >
+              {t.clear}
             </Button>
           </div>
         </CardContent>
@@ -276,6 +392,7 @@ export function SettingsPage() {
                 <SelectItem value="en">{languageNames.en}</SelectItem>
                 <SelectItem value="hi">{languageNames.hi}</SelectItem>
                 <SelectItem value="kn">{languageNames.kn}</SelectItem>
+                <SelectItem value="ml">{languageNames.ml}</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, User, Home, FileText, Settings, LogOut, Bell, UserCircle, HelpCircle } from "lucide-react";
+import { Menu, User, AlertCircle, FileText, Settings, LogOut, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
@@ -25,16 +25,27 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
   const [profileImage, setProfileImage] = useState<string | null>(
     localStorage.getItem("profileImage") || null
   );
+  const [userName, setUserName] = useState<string>(
+    localStorage.getItem("userName") || t.emergencyUser
+  );
+
+  const userMode = localStorage.getItem("userMode") || "anonymous";
 
   useEffect(() => {
     const handleProfileImageUpdate = (event: CustomEvent) => {
       setProfileImage(event.detail.imageUrl);
     };
 
+    const handleProfileNameUpdate = (event: CustomEvent) => {
+      setUserName(event.detail.userName);
+    };
+
     window.addEventListener("profileImageUpdated", handleProfileImageUpdate as EventListener);
+    window.addEventListener("profileNameUpdated", handleProfileNameUpdate as EventListener);
 
     return () => {
       window.removeEventListener("profileImageUpdated", handleProfileImageUpdate as EventListener);
+      window.removeEventListener("profileNameUpdated", handleProfileNameUpdate as EventListener);
     };
   }, []);
 
@@ -46,14 +57,23 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
   };
 
   const handleMenuClick = (page: string, label: string) => {
+    // If clicking on the currently active page, just close the menu
+    if (currentPage === page) {
+      setOpen(false);
+      return;
+    }
+    
+    // Otherwise, close menu and navigate
     setOpen(false);
     onNavigate(page);
   };
 
   const menuItems = [
-    { icon: Home, label: t.home, page: "home" },
-    { icon: FileText, label: t.myCertificates, page: "certificates" },
-    { icon: Bell, label: t.notifications, page: "notifications" },
+    { icon: AlertCircle, label: t.home, page: "home" },
+    // Show different menu item based on user mode
+    userMode === "volunteer" 
+      ? { icon: CheckCircle2, label: t.reportsReviewed, page: "reports-reviewed" }
+      : { icon: Clock, label: t.previousReports, page: "previous-reports" },
     { icon: Settings, label: t.settings, page: "settings" },
     { icon: LogOut, label: t.logout, page: "logout" },
   ];
@@ -108,33 +128,16 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
         <DropdownMenuContent className="w-56" align="end">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="font-medium">{t.healthUser}</p>
+              <p className="font-medium">{userName}</p>
               <p className="text-xs text-muted-foreground">
-                {t.userEmail}
+                {userMode === "anonymous" ? t.anonymousUser : t.userEmail}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onNavigate("home")}>
-            <Home className="mr-2 h-4 w-4" />
-            <span>{t.home}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("certificates")}>
-            <FileText className="mr-2 h-4 w-4" />
-            <span>{t.myCertificates}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onNavigate("notifications")}>
-            <Bell className="mr-2 h-4 w-4" />
-            <span>{t.notifications}</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onNavigate("settings")}>
             <Settings className="mr-2 h-4 w-4" />
             <span>{t.settings}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => toast.info(t.helpCenterComingSoon)}>
-            <HelpCircle className="mr-2 h-4 w-4" />
-            <span>{t.helpSupport}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem 

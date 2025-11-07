@@ -1,195 +1,340 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { AlertCircle, ShieldAlert, UserPlus, User } from "lucide-react";
 import { Button } from "../ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
-import { Heart, Lock, Mail } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { useLanguage } from "../LanguageProvider";
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (isAnonymous: boolean) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
+  
+  // User login state
+  const [userUsername, setUserUsername] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userRememberMe, setUserRememberMe] = useState(false);
+  const [isUserLoading, setIsUserLoading] = useState(false);
+  
+  // Volunteer login state
+  const [volUsername, setVolUsername] = useState("");
+  const [volPassword, setVolPassword] = useState("");
+  const [volRememberMe, setVolRememberMe] = useState(false);
+  const [isVolLoading, setIsVolLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAnonymousReport = () => {
+    // Allow immediate anonymous reporting
+    localStorage.setItem("userMode", "anonymous");
+    toast.success(t.reportSubmitted || "You can now report anonymously");
+    onLogin(true);
+  };
+
+  const handleUserLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Basic validation
-    if (!email || !password) {
+
+    if (!userUsername || !userPassword) {
       toast.error(t.fillAllFields);
       return;
     }
 
-    setIsLoading(true);
-    
-    // Validate credentials
+    setIsUserLoading(true);
+
+    // Simulate login
     setTimeout(() => {
-      setIsLoading(false);
-      
-      // Check for correct credentials
-      if (email === "hi" && password === "passHere") {
+      // Demo credentials for user login
+      if (userUsername === "user" && userPassword === "user123") {
+        if (userRememberMe) {
+          localStorage.setItem("rememberMe", "true");
+          localStorage.setItem("username", userUsername);
+        }
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userMode", "user");
+        localStorage.setItem("userName", "John Citizen");
         toast.success(t.loginSuccessful);
-        onLogin();
+        onLogin(false);
       } else {
-        toast.error(t.invalidCredentials);
+        toast.error(t.invalidCredentials || "Invalid credentials. Use: user / user123");
       }
-    }, 1500);
+      setIsUserLoading(false);
+    }, 1000);
+  };
+
+  const handleVolunteerLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!volUsername || !volPassword) {
+      toast.error(t.fillAllFields);
+      return;
+    }
+
+    setIsVolLoading(true);
+
+    // Simulate login
+    setTimeout(() => {
+      // Demo credentials for volunteer login
+      if (volUsername === "volunteer" && volPassword === "emergency2024") {
+        if (volRememberMe) {
+          localStorage.setItem("rememberMe", "true");
+          localStorage.setItem("username", volUsername);
+        }
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userMode", "volunteer");
+        localStorage.setItem("userName", "Volunteer Smith");
+        toast.success(t.loginSuccessful);
+        onLogin(false);
+      } else {
+        toast.error(t.invalidCredentials || "Invalid credentials. Use: volunteer / emergency2024");
+      }
+      setIsVolLoading(false);
+    }, 1000);
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-3 sm:p-4 md:p-6 overflow-hidden">
-      <Card className="w-full max-w-md shadow-lg max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] overflow-y-auto">
-        <CardHeader className="space-y-1 text-center px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
-          <div className="flex justify-center mb-2 sm:mb-3">
-            <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <Heart className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full max-w-5xl space-y-6">
+        {/* App Title */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <ShieldAlert className="h-12 w-12 text-red-600 dark:text-red-500" />
+            <h1 className="text-4xl text-gray-900 dark:text-white">{t.emergencyResponse}</h1>
           </div>
-          <CardTitle className="text-lg sm:text-2xl leading-tight">{t.healthIdManagement}</CardTitle>
-          <CardDescription className="text-xs sm:text-sm leading-tight">
-            {t.signInToAccess}
-            <div className="mt-1.5 sm:mt-2 text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 p-1.5 sm:p-2 rounded break-all leading-tight">
-              {t.demoCredentials} <span className="font-mono font-medium">hi</span> | {t.password.toLowerCase()}: <span className="font-mono font-medium">passHere</span>
-            </div>
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-4">
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="email" className="text-xs sm:text-sm">{t.username}</Label>
-              <div className="relative">
-                <Mail className="absolute left-2.5 sm:left-3 top-2 sm:top-2.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="text"
-                  placeholder={t.enterUsername}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 sm:pl-10 h-8 sm:h-10 text-xs sm:text-base"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="password" className="text-xs sm:text-sm">{t.password}</Label>
-              <div className="relative">
-                <Lock className="absolute left-2.5 sm:left-3 top-2 sm:top-2.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t.enterPassword}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 sm:pl-10 h-8 sm:h-10 text-xs sm:text-base"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
+          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+            {t.signInOrReport}
+          </p>
+        </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-0 pt-0.5">
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                <Checkbox id="remember" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <Label
-                  htmlFor="remember"
-                  className="text-xs sm:text-sm font-normal cursor-pointer leading-tight"
+        {/* Three Column Layout */}
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6">
+          {/* Quick Anonymous Report */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-white dark:bg-gray-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                <AlertCircle className="h-5 w-5" />
+                {t.quickReportAnonymous}
+              </CardTitle>
+              <CardDescription>{t.reportWithoutLogin}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-100 dark:border-red-900">
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-600 dark:text-red-500 mt-0.5">•</span>
+                      <span>Report immediately</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-600 dark:text-red-500 mt-0.5">•</span>
+                      <span>Works offline</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-600 dark:text-red-500 mt-0.5">•</span>
+                      <span>Privacy protected</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-600 dark:text-red-500 mt-0.5">•</span>
+                      <span>SMS fallback</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleAnonymousReport}
+                className="w-full h-12 bg-red-600 hover:bg-red-700 text-white"
+                size="lg"
+              >
+                <AlertCircle className="h-5 w-5 mr-2" />
+                {t.reportNeed}
+              </Button>
+
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                No login required
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* User Login */}
+          <Card className="border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <User className="h-5 w-5" />
+                {t.userLogin}
+              </CardTitle>
+              <CardDescription>
+                {t.trackYourReports}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleUserLogin} className="space-y-4">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-900 text-sm">
+                  <p className="text-blue-800 dark:text-blue-300">
+                    <strong>Demo:</strong> user / user123
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="user-username">{t.username}</Label>
+                  <Input
+                    id="user-username"
+                    type="text"
+                    placeholder={t.enterUsername}
+                    value={userUsername}
+                    onChange={(e) => setUserUsername(e.target.value)}
+                    disabled={isUserLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="user-password">{t.password}</Label>
+                  <Input
+                    id="user-password"
+                    type="password"
+                    placeholder={t.enterPassword}
+                    value={userPassword}
+                    onChange={(e) => setUserPassword(e.target.value)}
+                    disabled={isUserLoading}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="user-remember"
+                      checked={userRememberMe}
+                      onCheckedChange={(checked) => setUserRememberMe(checked as boolean)}
+                    />
+                    <label
+                      htmlFor="user-remember"
+                      className="text-sm cursor-pointer select-none"
+                    >
+                      {t.rememberMe}
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                    onClick={() => toast.info("Password recovery coming soon")}
+                  >
+                    {t.forgotPassword}
+                  </button>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isUserLoading}
                 >
-                  {t.rememberMe}
-                </Label>
-              </div>
-              <Button
-                type="button"
-                variant="link"
-                className="px-0 text-xs sm:text-sm h-auto justify-start sm:justify-center leading-tight"
-                disabled={isLoading}
-              >
-                {t.forgotPassword}
-              </Button>
-            </div>
+                  {isUserLoading ? t.signingIn : t.signIn}
+                </Button>
 
-            <Button
-              type="submit"
-              className="w-full h-8 sm:h-10 text-xs sm:text-base"
-              disabled={isLoading}
-            >
-              {isLoading ? t.signingIn : t.signIn}
-            </Button>
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                  Or <button type="button" className="text-blue-600 dark:text-blue-400 hover:underline" onClick={() => toast.info("Registration coming soon")}>{t.createAccount}</button>
+                </p>
+              </form>
+            </CardContent>
+          </Card>
 
-            <div className="relative my-2 sm:my-3">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-[10px] sm:text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  {t.orContinueWith}
-                </span>
-              </div>
-            </div>
+          {/* Volunteer Login */}
+          <Card className="border-2 border-green-200 dark:border-green-900 bg-white dark:bg-gray-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                <UserPlus className="h-5 w-5" />
+                {t.volunteerLogin}
+              </CardTitle>
+              <CardDescription>
+                {t.verifyAndAssist}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleVolunteerLogin} className="space-y-4">
+                <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 dark:border-green-900 text-sm">
+                  <p className="text-green-800 dark:text-green-300">
+                    <strong>Demo:</strong> volunteer / emergency2024
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => toast.info(t.googleLoginComingSoon)}
-                className="h-8 sm:h-10 text-[10px] sm:text-sm px-2 sm:px-4"
-              >
-                <svg className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
+                <div className="space-y-2">
+                  <Label htmlFor="vol-username">{t.username}</Label>
+                  <Input
+                    id="vol-username"
+                    type="text"
+                    placeholder={t.enterUsername}
+                    value={volUsername}
+                    onChange={(e) => setVolUsername(e.target.value)}
+                    disabled={isVolLoading}
                   />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                <span className="truncate">{t.google}</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => toast.info(t.appleLoginComingSoon)}
-                className="h-8 sm:h-10 text-[10px] sm:text-sm px-2 sm:px-4"
-              >
-                <svg className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-                </svg>
-                <span className="truncate">{t.apple}</span>
-              </Button>
-            </div>
+                </div>
 
-            <div className="text-center text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3 leading-tight">
-              {t.dontHaveAccount}{" "}
-              <Button
-                type="button"
-                variant="link"
-                className="px-0.5 sm:px-1 h-auto text-xs sm:text-sm leading-tight"
-                disabled={isLoading}
-                onClick={() => toast.info(t.registrationComingSoon)}
-              >
-                {t.signUp}
-              </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="vol-password">{t.password}</Label>
+                  <Input
+                    id="vol-password"
+                    type="password"
+                    placeholder={t.enterPassword}
+                    value={volPassword}
+                    onChange={(e) => setVolPassword(e.target.value)}
+                    disabled={isVolLoading}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="vol-remember"
+                      checked={volRememberMe}
+                      onCheckedChange={(checked) => setVolRememberMe(checked as boolean)}
+                    />
+                    <label
+                      htmlFor="vol-remember"
+                      className="text-sm cursor-pointer select-none"
+                    >
+                      {t.rememberMe}
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm text-green-600 hover:underline dark:text-green-400"
+                    onClick={() => toast.info("Password recovery coming soon")}
+                  >
+                    {t.forgotPassword}
+                  </button>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={isVolLoading}
+                >
+                  {isVolLoading ? t.signingIn : t.signIn}
+                </Button>
+
+                <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                  {t.volunteerAccessOnly}
+                </p>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Multi-channel Notice */}
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-blue-200 dark:border-gray-600">
+          <CardContent className="p-4">
+            <div className="text-center space-y-2">
+              <p className="text-sm">
+                <strong>Multiple ways to report:</strong> App • SMS • WhatsApp • USSD • IVR
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                All channels are monitored 24/7 • Help is always available
+              </p>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

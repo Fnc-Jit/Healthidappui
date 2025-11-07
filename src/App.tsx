@@ -3,6 +3,8 @@ import { Header } from "./components/Header";
 import { Toaster } from "./components/ui/sonner";
 import { LoginPage } from "./components/pages/LoginPage";
 import { HomePage } from "./components/pages/HomePage";
+import { PreviousReportsPage } from "./components/pages/PreviousReportsPage";
+import { ReportsReviewedPage } from "./components/pages/ReportsReviewedPage";
 import { MyCertificatesPage } from "./components/pages/MyCertificatesPage";
 import { NotificationsPage } from "./components/pages/NotificationsPage";
 import { SettingsPage } from "./components/pages/SettingsPage";
@@ -37,7 +39,11 @@ function AppContent() {
   const renderPage = () => {
     switch (currentPage) {
       case "home":
-        return <HomePage onNavigate={setCurrentPage} />;
+        return <HomePage />;
+      case "previous-reports":
+        return <PreviousReportsPage />;
+      case "reports-reviewed":
+        return <ReportsReviewedPage />;
       case "certificates":
         return <MyCertificatesPage />;
       case "notifications":
@@ -45,7 +51,7 @@ function AppContent() {
       case "settings":
         return <SettingsPage />;
       default:
-        return <HomePage onNavigate={setCurrentPage} />;
+        return <HomePage />;
     }
   };
 
